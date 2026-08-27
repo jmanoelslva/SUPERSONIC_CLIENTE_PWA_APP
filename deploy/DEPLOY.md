@@ -8,13 +8,9 @@ renovação automática) — pergunta o domínio e se é Apache ou Nginx, e não
 mexe em nenhum vhost já existente no servidor:
 
 ```bash
-git clone https://github.com/SEU-USUARIO/SUPERSONIC_WEB_APP.git
+git clone https://github.com/jmanoelslva/SUPERSONIC_WEB_APP.git
 sudo bash SUPERSONIC_WEB_APP/deploy/install.sh
 ```
-
-> **Nota:** troque a URL acima (e a mesma em `REPO_URL` dentro de
-> `install.sh`) pelo repositório real assim que ele existir — por
-> enquanto é só um placeholder.
 
 Rodar de novo (mesmo servidor, mesmo domínio) atualiza o portal: puxa o
 código mais recente, refaz o build e republica — sem reemitir certificado

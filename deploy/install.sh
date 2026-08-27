@@ -18,11 +18,7 @@ set -euo pipefail
 # --------------------------------------------------------------------------
 # Configuração fixa
 # --------------------------------------------------------------------------
-# TODO: troque pela URL real do repositório do SUPERSONIC_WEB_APP assim
-# que ele existir no GitHub (ou onde for hospedado) — ainda aponta pro
-# placeholder abaixo, que não existe, então "git clone" vai falhar até
-# isso ser corrigido.
-REPO_URL="https://github.com/SEU-USUARIO/SUPERSONIC_WEB_APP.git"
+REPO_URL="https://github.com/jmanoelslva/SUPERSONIC_WEB_APP.git"
 BACKEND_DOMAIN="controllr.provedorsupersonic.com.br"
 INSTALL_DIR="/opt/supersonic-web"
 ACME_WEBROOT="/var/www/certbot-acme"
