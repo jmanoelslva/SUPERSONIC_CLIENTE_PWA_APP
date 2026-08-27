@@ -237,7 +237,7 @@ export default function DetalheChamado() {
           listaExibida.map((op) => (
             <div key={op.opPk} className={`balao-linha ${op.doCliente ? 'linha-cliente' : 'linha-equipe'}`}>
               <div className={`balao ${op.doCliente ? 'balao-cliente' : 'balao-equipe'}`}>
-                {!op.doCliente && <span className="balao-autor">Equipe Hotnet</span>}
+                {!op.doCliente && <span className="balao-autor">Equipe Supersonic</span>}
 
                 {op.texto && <p className="balao-texto">{op.texto}</p>}
 
