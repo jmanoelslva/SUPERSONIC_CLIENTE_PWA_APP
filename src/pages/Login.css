@@ -100,7 +100,7 @@
 
 .login-erro {
   margin-top: 12px;
-  color: var(--cor-primaria-escura);
+  color: var(--cor-erro);
   font-size: 13px;
   font-weight: 600;
 }
