@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Instalador do portal HOTNET Web (cliente) num servidor Debian limpo (ou já
+# Instalador do portal Supersonic Web (cliente) num servidor Debian limpo (ou já
 # com outros sites rodando): clona o projeto, builda, instala/configura
 # Apache OU Nginx com reverse proxy pro backend Controllr/BRbyte e emite um
 # certificado Let's Encrypt com renovação automática.
@@ -46,7 +46,7 @@ trap 'err "Instalação interrompida (linha $LINENO). Nada foi desfeito — corr
 # --------------------------------------------------------------------------
 cat <<'BANNER'
 ==========================================================================
- Instalador do HOTNET Web (portal do cliente)
+ Instalador do Supersonic Web (portal do cliente)
 ==========================================================================
  Este script vai, nesta ordem:
    1. Instalar dependências (Node.js, git, rsync, Apache ou Nginx, certbot)

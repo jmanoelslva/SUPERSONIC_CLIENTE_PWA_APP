@@ -21,9 +21,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
       },
       manifest: {
-        name: 'HOTNET — Portal do Cliente',
-        short_name: 'HOTNET',
-        description: 'Acompanhe boletos, contratos, consumo e suporte da HOTNET.',
+        name: 'Supersonic — Portal do Cliente',
+        short_name: 'Supersonic',
+        description: 'Acompanhe boletos, contratos, consumo e suporte da Supersonic.',
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone',

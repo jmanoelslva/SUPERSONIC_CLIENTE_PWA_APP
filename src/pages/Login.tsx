@@ -5,7 +5,7 @@ import { useSessao } from '../auth/SessionContext'
 import LoginBackground from '../components/LoginBackground'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import { usePwaInstall } from '../hooks/usePwaInstall'
-import logoHotnet from '../assets/logo-hotnet.png'
+import logoSupersonic from '../assets/logo-supersonic.svg'
 import { abrirWhatsappLogin } from '../utils/whatsapp'
 import './Login.css'
 
@@ -42,7 +42,7 @@ export default function Login() {
       <LoginBackground />
 
       <div className="login-card">
-        <img src={logoHotnet} alt="HOTNET" className="login-logo" />
+        <img src={logoSupersonic} alt="Supersonic" className="login-logo" />
 
         <form onSubmit={aoEnviar}>
           <label htmlFor="usuario">

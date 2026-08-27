@@ -20,12 +20,14 @@
 }
 
 .home-header-logo {
-  height: 44px;
-  width: 44px;
-  border-radius: 50%;
+  height: 40px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  border-radius: 12px;
   background: var(--cor-superficie);
   box-shadow: var(--sombra-card);
-  padding: 4px;
+  padding: 6px 10px;
   flex-shrink: 0;
 }
 
