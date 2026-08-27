@@ -87,7 +87,7 @@ const PERGUNTAS: PerguntaFrequente[] = [
   },
   {
     categoriaId: 'contratos',
-    pergunta: 'Tenho mais de um contrato com a HOTNET, como acompanho cada um?',
+    pergunta: 'Tenho mais de um contrato com a Supersonic, como acompanho cada um?',
     resposta:
       'Todos os seus contratos aparecem na tela de Contratos, com plano, valor e itens de cada um. Na tela de Boletos, um filtro por contrato é exibido automaticamente quando você possui mais de um.',
   },

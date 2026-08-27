@@ -1,6 +1,6 @@
-# HOTNET Web
+# Supersonic Web
 
-Portal do cliente HOTNET em formato web, para hospedagem em servidor
+Portal do cliente Supersonic em formato web, para hospedagem em servidor
 próprio da empresa sob o domínio `cliente.provedorsupersonic.com.br`. Reaproveita o
 mesmo backend Controllr/BRbyte (`controllr.provedorsupersonic.com.br`) já usado pelo app Android,
 mas é um projeto novo e independente — nenhum código do app Android é

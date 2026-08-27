@@ -70,7 +70,7 @@ export default function Cadastro() {
         icone={MdBadge}
         cor={CORES.dados}
         titulo="Meus dados"
-        subtitulo="Suas informações cadastrais na HOTNET."
+        subtitulo="Suas informações cadastrais na Supersonic."
       />
 
       {carregando && (

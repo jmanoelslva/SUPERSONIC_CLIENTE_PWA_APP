@@ -26,7 +26,7 @@ import { usePwaInstall } from '../hooks/usePwaInstall'
 import { useTema } from '../hooks/useTema'
 import ModalInstalarIos from '../components/ModalInstalarIos'
 import ModalConfirmarLogout from '../components/ModalConfirmarLogout'
-import logoHotnet from '../assets/logo-hotnet.png'
+import logoSupersonic from '../assets/logo-supersonic.svg'
 import './Home.css'
 
 function saudacaoPorHorario(primeiroNome: string): string {
@@ -128,7 +128,7 @@ export default function Home() {
         className="home-cabecalho"
         style={{ background: comAlpha(CORES.primaria, 8), borderColor: comAlpha(CORES.primaria, 20) }}
       >
-        <img src={logoHotnet} alt="HOTNET" className="home-header-logo" />
+        <img src={logoSupersonic} alt="Supersonic" className="home-header-logo" />
 
         <div className="home-header-saudacao">
           <span className="home-saudacao">{saudacaoPorHorario(nomeExibido)}</span>

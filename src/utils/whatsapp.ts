@@ -1,5 +1,5 @@
-// 55 (Brasil) + 82 (DDD) + 999426613 — mesmo número usado no app Android.
-const NUMERO_WHATSAPP = '5582999426613'
+// 55 (Brasil) + 82 (DDD) + 999009302 — WhatsApp de suporte da Supersonic.
+const NUMERO_WHATSAPP = '5582999009302'
 
 function abrir(mensagem: string) {
   const url = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensagem)}`

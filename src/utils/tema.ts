@@ -1,6 +1,6 @@
 export type Tema = 'light' | 'dark'
 
-const CHAVE_TEMA = 'hotnet-tema'
+const CHAVE_TEMA = 'supersonic-tema'
 
 function temaDoSistema(): Tema {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
