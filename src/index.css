@@ -5,10 +5,10 @@
   color-scheme: light dark;
 
   /* Marca */
-  --cor-primaria: #f28f3b;
-  --cor-primaria-escura: #d94a38;
-  --cor-primaria-clara: #f49c53;
-  --cor-primaria-gradiente-fim: #de6050;
+  --cor-primaria: #ffa401;
+  --cor-primaria-escura: #3e4095;
+  --cor-primaria-clara: #ffbb4d;
+  --cor-primaria-gradiente-fim: #3e4095;
 
   /* Superfícies */
   --cor-fundo: #f5f5f5;

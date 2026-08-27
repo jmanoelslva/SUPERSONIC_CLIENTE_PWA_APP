@@ -14,7 +14,7 @@ const DISTANCIA_CONEXAO = 150
 const VELOCIDADE_MAXIMA = 0.12
 const ALPHA_MAXIMO_LINHA = 200 / 255
 const ALPHA_PONTO = 150 / 255
-const COR_RGB = '242, 143, 59' // #F28F3B — login_orange_gradient_start
+const COR_RGB = '255, 164, 1' // #FFA401 — cor primária da marca
 
 /**
  * Fundo decorativo animado da tela de login: pontos que flutuam devagar e
@@ -115,9 +115,10 @@ export default function LoginBackground() {
       <canvas ref={canvasRef} className="login-background-canvas" aria-hidden="true" />
 
       {/*
-        Decoração do rodapé (curva vermelha atrás + laranja na frente) —
-        intencionalmente ESTÁTICA, sem animação (o usuário já pediu pra
-        manter assim, ver LoginBottomDecorationView.kt do app Android).
+        Decoração do rodapé (curva azul-marinho atrás + laranja na frente,
+        as duas cores da marca) — intencionalmente ESTÁTICA, sem animação
+        (o usuário já pediu pra manter assim, ver LoginBottomDecorationView.kt
+        do app Android original).
       */}
       <svg
         className="login-background-onda"
@@ -126,22 +127,22 @@ export default function LoginBackground() {
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id="ondaVermelha" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e57567" />
-            <stop offset="100%" stopColor="#d94a38" />
+          <linearGradient id="ondaEscura" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#8b8cbf" />
+            <stop offset="100%" stopColor="#3e4095" />
           </linearGradient>
           <linearGradient id="ondaLaranja" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f6b370" />
-            <stop offset="100%" stopColor="#f28f3b" />
+            <stop offset="0%" stopColor="#ffc45a" />
+            <stop offset="100%" stopColor="#ffa401" />
           </linearGradient>
           <filter id="sombraOnda" x="-20%" y="-60%" width="140%" height="200%">
-            <feDropShadow dx="0" dy="-3" stdDeviation="5" floodColor="#f28f3b" floodOpacity="0.35" />
+            <feDropShadow dx="0" dy="-3" stdDeviation="5" floodColor="#ffa401" floodOpacity="0.35" />
           </filter>
         </defs>
 
         <path
           d="M0,60 C70,92 160,102 260,70 C310,54 350,44 400,38 L400,150 L0,150 Z"
-          fill="url(#ondaVermelha)"
+          fill="url(#ondaEscura)"
           opacity="0.88"
         />
         <path
