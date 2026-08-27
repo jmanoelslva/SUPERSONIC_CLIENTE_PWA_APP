@@ -1,0 +1,152 @@
+# Exemplo de VirtualHost Apache para cliente.provedorsupersonic.com.br
+#
+# Serve o build estático do Vite (npm run build -> dist/) e faz o reverse
+# proxy de /api/* para o backend real (controllr.provedorsupersonic.com.br), reescrevendo o
+# domínio do cookie de sessão (ver README.md, seção "Reverse proxy em
+# produção"). Requer os módulos: proxy, proxy_http, headers, rewrite,
+# ssl (a2enmod proxy proxy_http headers rewrite ssl).
+#
+# Ajuste os caminhos de certificado e o DocumentRoot pro local real onde
+# o conteúdo de dist/ for publicado.
+
+<VirtualHost *:80>
+    ServerName cliente.provedorsupersonic.com.br
+    Redirect permanent / https://cliente.provedorsupersonic.com.br/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName cliente.provedorsupersonic.com.br
+
+    SSLEngine on
+    SSLCertificateFile      /etc/letsencrypt/live/cliente.provedorsupersonic.com.br/fullchain.pem
+    SSLCertificateKeyFile   /etc/letsencrypt/live/cliente.provedorsupersonic.com.br/privkey.pem
+
+    DocumentRoot /var/www/supersonic-web/dist
+
+    # OBRIGATÓRIO: o pacote apache2 do Debian já vem com um
+    # "Alias /icons/ ..." global (mods-enabled/alias.conf, usado pros
+    # ícones de listagem de diretório) que intercepta /icons/* antes de
+    # chegar na pasta do próprio app — sem isso, os ícones do manifest
+    # do PWA (public/icons/) dão 404 e o navegador nunca oferece "Instalar
+    # app". Este Alias mais específico sobrepõe o padrão do sistema.
+    Alias /icons /var/www/supersonic-web/dist/icons
+
+    <Directory /var/www/supersonic-web/dist>
+        Options -Indexes
+        AllowOverride None
+        Require all granted
+
+        # Cabeçalhos de segurança só aqui, dentro do <Directory> do NOSSO
+        # build (não em nível de VirtualHost) DE PROPÓSITO: as páginas do
+        # Controllr repassadas via ProxyPass (/api, /public, /common) não
+        # passam por este <Directory> (mod_proxy resolve antes de chegar
+        # no mapeamento de arquivo/diretório) — então a CSP restritiva
+        # abaixo nunca chega nelas. São HTML de um sistema legado que não
+        # controlamos, provavelmente com <style>/<script> inline; aplicar
+        # a mesma CSP nelas quebraria essas páginas.
+        #
+        # 'unsafe-inline' NÃO é necessário em style-src: o React seta
+        # estilo inline via propriedade do DOM (CSSOM), não via atributo
+        # "style=" no HTML nem <style> — isso não é bloqueado por CSP.
+        Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        Header always set X-Frame-Options "DENY"
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        # geolocation=(self): usado no compartilhamento de localização do
+        # Suporte (ver DetalheChamado.tsx). O resto vai desligado — nada
+        # aqui usa câmera/microfone/pagamento via API do navegador (o
+        # anexo de foto usa <input type="file" capture>, que abre o app
+        # de câmera do sistema sem precisar de permissão via API).
+        Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), usb=()"
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+        # NUNCA cachear o que vem daqui (index.html, sw.js, workbox-*.js,
+        # manifest.webmanifest) — é assim que o navegador descobre que
+        # existe uma versão nova pra instalar: ele só nota a diferença se
+        # buscar esses arquivos de novo na rede. Sem "Cache-Control"
+        # nenhum, a política padrão do navegador podia manter o sw.js
+        # "antigo" guardado por horas/dias, escondendo atualizações até o
+        # cliente limpar os dados manualmente (bug relatado e confirmado
+        # — era exatamente isso). O <Directory dist/assets> abaixo
+        # sobrescreve isso pros arquivos com hash no nome, que sim podem
+        # — e devem — cachear por muito tempo.
+        Header always set Cache-Control "no-cache"
+
+        RewriteEngine On
+        RewriteBase /
+
+        # A tela de impressão do CONTRATO referencia o logo direto em
+        # "/assets/..." (sem o prefixo "/public" que o boleto usa) — só
+        # que "/assets/" também é onde o PRÓPRIO build do Vite guarda
+        # seus arquivos (JS/CSS com hash). Serve o arquivo local se ele
+        # existir; só repassa pro backend (via proxy) quando não existir.
+        RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+        RewriteRule ^assets/(.*)$ https://controllr.provedorsupersonic.com.br/assets/$1 [P,L]
+
+        # SPA: qualquer rota que não bata em um arquivo real cai no
+        # index.html (o roteamento de fato acontece no react-router-dom).
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !^/api/
+        RewriteCond %{REQUEST_URI} !^/public/
+        RewriteCond %{REQUEST_URI} !^/common/
+        RewriteCond %{REQUEST_URI} !^/assets/
+        RewriteRule . /index.html [L]
+    </Directory>
+
+    # Sobrescreve o "no-cache" do <Directory> acima só pros arquivos do
+    # build com hash no nome (ex: index-D4VyL3qq.js) — o nome muda
+    # sempre que o conteúdo muda, então nunca serve um arquivo "errado"
+    # do cache com esse esquema; "immutable" por 1 ano é seguro de
+    # verdade aqui. Precisa vir DEPOIS do <Directory dist> acima — o
+    # Apache mescla configuração de diretório do menos pro mais
+    # específico, então este (mais específico) vence pros arquivos que
+    # realmente estão dentro de dist/assets.
+    <Directory /var/www/supersonic-web/dist/assets>
+        Header always set Cache-Control "public, max-age=31536000, immutable"
+    </Directory>
+
+    # Reverse proxy do backend Controllr/BRbyte — mesma lógica do proxy de
+    # desenvolvimento do Vite (vite.config.ts), só que aqui é o Apache quem
+    # faz esse papel em produção.
+    SSLProxyEngine on
+    ProxyPreserveHost off
+
+    # IP de origem do cliente pro backend — sem isso, todo acesso via este
+    # portal aparece pro Controllr com o IP DESTE SERVIDOR (o proxy), não o
+    # do cliente de verdade, o que atrapalha localização/geolocalização e
+    # qualquer log baseado em IP. O mod_proxy do Apache já acrescenta
+    # X-Forwarded-For sozinho por padrão (ProxyAddHeaders não está
+    # desligado); X-Real-IP precisa ser setado à mão porque é convenção do
+    # Nginx, não do Apache — ver o mesmo cabeçalho no nginx.conf.example.
+    # IMPORTANTE: só ter o cabeçalho aqui não basta — o Controllr também
+    # precisa estar configurado do lado dele pra CONFIAR e LER esse
+    # cabeçalho vindo do IP deste servidor (não é algo deste repositório).
+    RequestHeader set X-Real-IP "%{REMOTE_ADDR}e"
+
+    ProxyPass        /api/ https://controllr.provedorsupersonic.com.br/
+    ProxyPassReverse /api/ https://controllr.provedorsupersonic.com.br/
+
+    # Páginas geradas pelo próprio backend (ex: o layout de impressão do
+    # boleto, invoice_ctl/invoice/print_layout, servido via /api acima)
+    # referenciam logo/ícones com caminho absoluto (ex:
+    # "/public/assets/uploaddir/logo/office/1/logo.png"), esperando estar
+    # em controllr.provedorsupersonic.com.br — sem repassar essas duas rotas também, essas
+    # imagens quebram (o navegador tenta buscar no nosso próprio domínio).
+    # Mesmo prefixo dos dois lados: preserva o path (sem cortar nada).
+    ProxyPass        /public/ https://controllr.provedorsupersonic.com.br/public/
+    ProxyPassReverse /public/ https://controllr.provedorsupersonic.com.br/public/
+    ProxyPass        /common/ https://controllr.provedorsupersonic.com.br/common/
+    ProxyPassReverse /common/ https://controllr.provedorsupersonic.com.br/common/
+
+    # Reversão pro proxy via mod_rewrite [P] de /assets/ (ver o
+    # RewriteRule dentro do <Directory> acima).
+    ProxyPassReverse /assets/ https://controllr.provedorsupersonic.com.br/assets/
+
+    # OBRIGATÓRIO: reescreve o domínio do Set-Cookie de controllr.provedorsupersonic.com.br pra
+    # cliente.provedorsupersonic.com.br, senão o navegador descarta o cookie de sessão
+    # (BRBOSCookie) por não bater com o domínio da página. "edit*" (em vez
+    # de "edit") é necessário porque pode haver mais de um Set-Cookie por
+    # resposta.
+    Header edit* Set-Cookie "domain=controllr\.provedorsupersonic\.com\.br" "domain=cliente.provedorsupersonic.com.br"
+</VirtualHost>

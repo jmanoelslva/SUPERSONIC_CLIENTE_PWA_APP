@@ -1,0 +1,355 @@
+.boletos-tela {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.boletos-abas {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Prefixado com .boletos-tela pra não colidir com o .aba-chip de mesmo
+   nome em Suporte.css — sem isso, o CSS de qualquer um dos dois arquivos
+   que "vencer" a ordem de import define a cor dos dois ao mesmo tempo. */
+.boletos-tela .aba-chip {
+  flex: 1;
+  /* 44px = alvo de toque mínimo recomendado (WCAG 2.5.5 / Material Design). */
+  height: 44px;
+  border-radius: 22px;
+  border: 1.5px solid var(--cor-ajuda);
+  background: transparent;
+  color: var(--cor-ajuda);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boletos-tela .aba-chip.aba-pagos {
+  border-color: var(--cor-sucesso);
+  color: var(--cor-sucesso);
+}
+
+.boletos-tela .aba-chip.ativa {
+  background: var(--cor-ajuda);
+  color: var(--cor-branco-fixo);
+}
+
+.boletos-tela .aba-chip.aba-pagos.ativa {
+  background: var(--cor-sucesso);
+  color: var(--cor-branco-fixo);
+}
+
+.boletos-filtro-contrato {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--cor-borda);
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  margin-bottom: 20px;
+}
+
+.boletos-status {
+  color: var(--cor-texto-secundario);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+}
+
+.boletos-status button {
+  margin-top: 12px;
+  height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--cor-branco-fixo);
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
+
+.boletos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.boleto-card {
+  background: var(--cor-superficie);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--sombra-card);
+}
+
+.boleto-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.boleto-titulo {
+  font-weight: 700;
+  color: var(--cor-texto);
+  font-size: 15px;
+}
+
+.boleto-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--cor-branco-fixo);
+  border-radius: 12px;
+  padding: 4px 10px;
+}
+
+.badge-em-dia {
+  background: var(--cor-ajuda);
+}
+
+.badge-vencida {
+  background: var(--cor-erro);
+}
+
+.badge-paga {
+  background: var(--cor-sucesso);
+}
+
+/* Vencimento à esquerda, valor à direita, lado a lado — em vez de
+   empilhados, dá pra ver as duas informações mais importantes do boleto
+   de uma vez, sem precisar ler o card inteiro de cima a baixo. */
+.boleto-vencimento-valor {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.boleto-coluna-valor {
+  text-align: right;
+}
+
+.boleto-vencimento {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.boleto-aviso {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.boleto-aviso-paga {
+  color: var(--cor-sucesso);
+}
+
+.boleto-aviso-vencida {
+  color: var(--cor-erro);
+}
+
+.boleto-label-valor {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.boleto-valor {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cor-texto);
+}
+
+/* Agrupa valor original + explicação da multa/juros num bloco só, em vez
+   de duas linhas soltas com alinhamentos diferentes (uma direita, outra
+   esquerda) — isso é que destoava; agora é uma nota coesa, separada
+   visualmente da linha vencimento/valor por um fundo bem sutil. */
+.boleto-detalhes-atraso {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cor-erro) 6%, transparent);
+}
+
+.boleto-valor-original {
+  margin: 0;
+  font-size: 12px;
+  color: var(--cor-texto-terciario);
+}
+
+.boleto-taxas {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--cor-texto-terciario);
+}
+
+/* Chip logo abaixo do título/badge, junto da "identidade" do boleto —
+   antes ficava sozinho entre o valor e os botões de pagamento, sem muita
+   relação com nenhum dos dois blocos vizinhos. */
+.boleto-contrato-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  /* min-height 32px é ok aqui (menor que o alvo de 44px dos botões de
+     ação) — é um link secundário de navegação, não uma ação de pagamento. */
+  min-height: 32px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Grade de 2 colunas em vez de flex-wrap — antes os botões quebravam
+   linha de forma desalinhada (3 numa linha, 1 sozinho na outra); agora
+   ficam em pares do mesmo tamanho, com "Pagar com PIX" (ação principal)
+   ocupando a linha inteira no topo. */
+.boleto-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.boleto-acoes button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  /* 44px = alvo de toque mínimo recomendado (WCAG 2.5.5 / Material Design) —
+     eram 36px, pequeno demais pra tocar com conforto/precisão no celular.
+     min-height (não height fixo) pra rótulos longos poderem quebrar em
+     duas linhas numa coluna estreita sem cortar o texto. */
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 22px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  cursor: pointer;
+}
+
+.boleto-acoes button svg {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.boleto-acao-principal {
+  grid-column: 1 / -1;
+}
+
+.boletos-ver-mais {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cor-texto-terciario);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boletos-modal-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.boletos-modal {
+  background: var(--cor-superficie);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 24px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  animation: boletos-modal-subir 0.2s ease;
+}
+
+.boletos-modal::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+  margin: 0 auto 16px;
+}
+
+@keyframes boletos-modal-subir {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.boletos-modal img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.boletos-modal button {
+  margin-top: 16px;
+  height: 44px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--cor-branco-fixo);
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
+
+.boletos-modal-confirmar h2 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--cor-texto);
+}
+
+.boletos-modal-confirmar p {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  text-align: justify;
+}
+
+.boletos-modal-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.boletos-modal-acoes button {
+  margin-top: 0;
+  flex: 1;
+}
+
+.boletos-modal-acoes button:first-child {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+}

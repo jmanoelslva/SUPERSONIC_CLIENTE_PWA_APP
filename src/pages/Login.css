@@ -1,0 +1,236 @@
+.login-tela {
+  position: relative;
+  /* 100vh sozinho é calculado com a barra de endereço do Safari mobile já
+     escondida — com ela visível, a página fica "mais alta" que a área
+     realmente visível, dando aquela sensação de dar pra arrastar/balançar
+     sem rolagem de verdade (rubber-band) mesmo sem conteúdo a mais pra
+     mostrar. 100dvh acompanha a barra indo/vindo (mesmo padrão já usado
+     em Home.css). */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-fundo);
+  padding: 24px;
+  /* Sem "overflow: hidden" aqui — quando o cartão fica mais alto que a
+     tela (telas curtas, ou depois do botão "Instalar app"), essa altura
+     mínima cede e a rolagem normal do documento assume, revelando o
+     resto do cartão em vez de cortá-lo. */
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  background: var(--cor-superficie);
+  border-radius: 24px;
+  padding: 32px 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.login-logo {
+  display: block;
+  height: 64px;
+  width: auto;
+  margin: 0 auto 24px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-card label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin-top: 12px;
+}
+
+.login-label-icone {
+  font-size: 14px;
+}
+
+.login-card input {
+  margin-top: 6px;
+  height: 48px;
+  width: 100%;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+}
+
+.login-campo-senha {
+  position: relative;
+}
+
+.login-campo-senha input {
+  padding-right: 44px;
+}
+
+.login-toggle-senha {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  height: 48px;
+  width: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--cor-texto-terciario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-erro {
+  margin-top: 12px;
+  color: var(--cor-primaria-escura);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-btn-entrar {
+  margin-top: 24px;
+  height: 52px;
+  border: none;
+  border-radius: 12px;
+  color: var(--cor-branco-fixo);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
+
+.login-btn-entrar:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.login-nao-consigo {
+  margin-top: 16px;
+  border: none;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.login-btn-instalar {
+  margin-top: 16px;
+  height: 44px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto-secundario);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.login-modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.login-modal {
+  background: var(--cor-superficie);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 24px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: left;
+  animation: login-modal-subir 0.2s ease;
+}
+
+.login-modal::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cor-borda);
+  margin: 0 auto 16px;
+}
+
+@keyframes login-modal-subir {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.login-modal h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: var(--cor-texto);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-modal-icone {
+  font-size: 20px;
+}
+
+.login-modal p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+  line-height: 1.5;
+  text-align: justify;
+}
+
+.login-modal-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.login-modal-acoes button {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-modal-acoes button.login-modal-whatsapp {
+  border: none;
+  color: var(--cor-branco-fixo);
+  background: linear-gradient(135deg, var(--cor-primaria), var(--cor-primaria-escura));
+}
