@@ -127,6 +127,17 @@
     ProxyPass        /api/ https://controllr.provedorsupersonic.com.br/
     ProxyPassReverse /api/ https://controllr.provedorsupersonic.com.br/
 
+    # Limite de tamanho do corpo da requisição — o Apache, ao contrário do
+    # Nginx (que vem com 1m de fábrica), não limita por padrão
+    # (LimitRequestBody 0 = ilimitado), então isso aqui não é obrigatório
+    # pro anexo de chamado (foto/galeria/documento, support_ctl/annex/
+    # upload) funcionar. Definido mesmo assim, igual ao client_max_body_size
+    # do nginx.conf.example, pra não deixar upload de tamanho ilimitado
+    # batendo no Controllr através deste proxy.
+    <Location "/api/">
+        LimitRequestBody 20971520
+    </Location>
+
     # Páginas geradas pelo próprio backend (ex: o layout de impressão do
     # boleto, invoice_ctl/invoice/print_layout, servido via /api acima)
     # referenciam logo/ícones com caminho absoluto (ex:

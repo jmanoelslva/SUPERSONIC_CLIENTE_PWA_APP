@@ -78,6 +78,16 @@ server {
     location /api/ {
         proxy_pass https://controllr.provedorsupersonic.com.br/;
 
+        # O padrão do Nginx (1m) é menor que uma foto de câmera comum —
+        # sem isso, o anexo de chamado (support_ctl/annex/upload, foto/
+        # galeria/documento) é rejeitado com 413 ANTES de chegar no
+        # Controllr, e o Nginx devolve uma página de erro em HTML (não
+        # JSON) que quebra o response.json() do cliente (client.ts) com
+        # "Unexpected token... is not valid JSON". Mensagens de texto e
+        # localização (support_ctl/op/create) não têm esse problema por
+        # serem POSTs pequenos — só o upload de arquivo é afetado.
+        client_max_body_size 20m;
+
         proxy_set_header Host controllr.provedorsupersonic.com.br;
         # IP de origem do cliente pro backend — sem isso, todo acesso via
         # este portal aparece pro Controllr com o IP DESTE SERVIDOR (o

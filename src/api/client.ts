@@ -543,8 +543,22 @@ export async function enviarAnexoChamado(ticketPk: number, arquivo: File): Promi
     throw new SessaoExpiradaError()
   }
 
+  // Uma resposta de erro que nunca chegou a passar pelo Controllr (ex:
+  // 413 do proxy quando o arquivo excede o limite configurado no
+  // servidor web, client_max_body_size no Nginx/LimitRequestBody no
+  // Apache — ver deploy/nginx.conf.example) vem em HTML, não JSON.
+  // response.json() quebraria com "Unexpected token..." em vez de
+  // mostrar um erro entendível pro cliente.
+  if (!response.ok) {
+    throw new ApiError(
+      response.status === 413
+        ? 'Arquivo grande demais para anexar. Tente um arquivo menor.'
+        : `Não foi possível enviar o anexo (erro ${response.status}).`,
+    )
+  }
+
   const json = (await response.json()) as { success?: boolean; message?: string }
-  if (!response.ok || json.success === false) {
+  if (json.success === false) {
     throw new ApiError(json.message ?? 'Não foi possível enviar o anexo.')
   }
   return json
