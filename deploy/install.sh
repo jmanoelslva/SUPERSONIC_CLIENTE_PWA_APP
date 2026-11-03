@@ -18,7 +18,7 @@ set -euo pipefail
 # --------------------------------------------------------------------------
 # Configuração fixa
 # --------------------------------------------------------------------------
-REPO_URL="https://github.com/jmanoelslva/SUPERSONIC_WEB_APP.git"
+REPO_URL="https://github.com/jmanoelslva/SUPERSONIC_CLIENTE_PWA_APP.git"
 BACKEND_DOMAIN="controllr.provedorsupersonic.com.br"
 INSTALL_DIR="/opt/supersonic-web"
 ACME_WEBROOT="/var/www/certbot-acme"
