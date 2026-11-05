@@ -4,6 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Versão do package.json, mostrada em Perfil → Sobre.
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? ''),
+  },
   plugins: [
     react(),
     VitePWA({
@@ -36,6 +40,10 @@ export default defineConfig({
         // novo), em vez de só nas próximas abas/navegações.
         skipWaiting: true,
         clientsClaim: true,
+        // Padrão (js/css/html) + as fontes locais, para abrir já com elas.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
+        // O gerador de PDF (jsPDF e dependências) só baixa quando alguém gera um recibo ou declaração.
+        globIgnores: ['**/jspdf*.js', '**/index.es-*.js', '**/html2canvas*.js', '**/purify*.js'],
       },
       manifest: {
         name: 'Supersonic — Portal do Cliente',
@@ -44,8 +52,9 @@ export default defineConfig({
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone',
-        background_color: '#f5f5f5',
-        theme_color: '#ffa401',
+        // Barras do sistema e abertura na cor do fundo da tela.
+        background_color: '#f7f8fa',
+        theme_color: '#f7f8fa',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },

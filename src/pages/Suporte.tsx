@@ -1,27 +1,30 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { MdAdd, MdKeyboardArrowRight } from 'react-icons/md'
+import { IcCampaign, IcClose, IcConstruction, IcPayments, IcSell, IcSupportAgent, IcSwapHoriz, IcWarning, IcWhatsapp } from '../components/IconesApp'
+import { useLocation, useNavigate } from 'react-router-dom'
 import type { IconType } from 'react-icons'
-import {
-  MdAdd,
-  MdCampaign,
-  MdClose,
-  MdConstruction,
-  MdExpandMore,
-  MdPayments,
-  MdSell,
-  MdSupportAgent,
-  MdSwapHoriz,
-  MdWarning,
-} from 'react-icons/md'
 import { useSessao } from '../auth/useSessao'
-import { buscarCategorias, buscarChamados, chamadoResolvido, abrirChamado as apiAbrirChamado } from '../api/suporte'
+import {
+  buscarCategorias,
+  buscarChamados,
+  chamadoResolvido,
+  abrirChamado as apiAbrirChamado,
+  type ChamadoCriado,
+} from '../api/suporte'
+import { buscarContratos } from '../api/contratos'
+import { buscarDadosCliente } from '../api/cadastro'
+import { contarBoletosAtrasados, situacaoDosContratos } from '../api/situacao'
+import ChecklistConexao from '../components/ChecklistConexao'
+import NovoChamado from '../components/NovoChamado'
+import { abrirWhatsappSuporte } from '../utils/whatsapp'
 import type { CategoriaDto, TicketDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
+import { AbasPilula } from '../components/PadraoTelas'
 import { useToast } from '../components/Toast/useToast'
 import Skeleton from '../components/Skeleton'
 import EstadoVazio from '../components/EstadoVazio'
 import PullToRefresh from '../components/PullToRefresh'
-import { CORES, comAlpha } from '../utils/cores'
+import { CORES } from '../utils/cores'
 import './Suporte.css'
 
 const TAMANHO_PAGINA = 20
@@ -30,17 +33,17 @@ type Aba = 'abertos' | 'resolvidos'
 
 // Ícone de cada categoria pelo nome exato configurado no painel do
 // Controllr (não é lista fixa) — categoria desconhecida cai no padrão.
-const ICONE_PADRAO = MdSupportAgent
+const ICONE_PADRAO = IcSupportAgent
 const ICONES_CATEGORIA: Record<string, IconType> = {
-  'suporte técnico': MdSupportAgent,
-  'financeiro e pagamentos': MdPayments,
-  'vendas e comercial': MdSell,
-  'alteração de plano': MdSwapHoriz,
-  'reclamação': MdWarning,
-  cancelamento: MdClose,
-  'ouvidoria e adminstrativo': MdCampaign,
-  'ouvidoria e administrativo': MdCampaign,
-  instalação: MdConstruction,
+  'suporte técnico': IcSupportAgent,
+  'financeiro e pagamentos': IcPayments,
+  'vendas e comercial': IcSell,
+  'alteração de plano': IcSwapHoriz,
+  'reclamação': IcWarning,
+  cancelamento: IcClose,
+  'ouvidoria e adminstrativo': IcCampaign,
+  'ouvidoria e administrativo': IcCampaign,
+  instalação: IcConstruction,
 }
 
 function iconeParaCategoria(nome: string): IconType {
@@ -89,29 +92,28 @@ export default function Suporte() {
 
   const [categorias, setCategorias] = useState<CategoriaDto[]>([])
   const [checklistAberto, setChecklistAberto] = useState(false)
-  const [dialogAberto, setDialogAberto] = useState(false)
-  const [categoriaPk, setCategoriaPk] = useState<number | null>(null)
-  const [categoriaMenuAberto, setCategoriaMenuAberto] = useState(false)
-  const [assunto, setAssunto] = useState('')
-  const [descricao, setDescricao] = useState('')
-  const [enviando, setEnviando] = useState(false)
+  const [novoChamadoAberto, setNovoChamadoAberto] = useState(false)
+  // Passos marcados no checklist de conexão: vão junto no texto do chamado.
+  const [passosFeitos, setPassosFeitos] = useState<string[]>([])
+  const [contratoStatus, setContratoStatus] = useState<number | null>(null)
+  const [boletosAtrasados, setBoletosAtrasados] = useState<number | null>(null)
+  const location = useLocation()
 
   useEffect(() => {
     carregar()
     carregarCategorias()
+    // Todos os contratos cancelados: atendimento só pelo WhatsApp (checklist e novo chamado).
+    buscarContratos()
+      .then((contratos) => setContratoStatus(situacaoDosContratos(contratos)))
+      .catch(() => setContratoStatus(null))
+    // "Diagnóstico" da Início → "abrir chamado": já chega no formulário, com os passos feitos.
+    const vindoDaInicio = location.state as { abrirNovoChamado?: boolean; passos?: string[] } | null
+    if (vindoDaInicio?.abrirNovoChamado) {
+      abrirNovoChamado(vindoDaInicio.passos ?? [])
+      navigate(location.pathname, { replace: true, state: null })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Se o diálogo já estiver aberto quando o retry de categorias (ver
-  // abrirDialog) terminar de carregar, seleciona a primeira automaticamente
-  // — sem isso, a lista aparece no dropdown mas nada fica pré-selecionado,
-  // e "categoriaPk" continua null (bloqueando o envio) até o cliente abrir
-  // o dropdown manualmente.
-  useEffect(() => {
-    if (dialogAberto && categoriaPk == null && categorias.length > 0) {
-      setCategoriaPk(categorias[0].category_pk)
-    }
-  }, [categorias, dialogAberto, categoriaPk])
 
   async function carregarCategorias() {
     try {
@@ -155,51 +157,71 @@ export default function Suporte() {
   // que os chamados desse tipo ainda não foram trazidos do servidor.
   const haMaisParaCarregar = chamados.length < totalNoServidor
 
-  function abrirDialog() {
-    if (categorias.length === 0) {
-      toast('Categorias não carregadas ainda, tente novamente em instantes.')
-      carregarCategorias()
-    }
-    setCategoriaPk(categorias[0]?.category_pk ?? null)
-    setCategoriaMenuAberto(false)
-    setAssunto('')
-    setDescricao('')
-    setDialogAberto(true)
+  function abrirChecklist() {
+    setBoletosAtrasados(null)
+    setChecklistAberto(true)
+    contarBoletosAtrasados().then(setBoletosAtrasados)
   }
 
-  async function enviarChamado() {
-    if (categoriaPk == null || !assunto.trim() || !descricao.trim()) {
-      toast('Preencha categoria, assunto e descrição.')
-      return
-    }
-    setEnviando(true)
+  function abrirNovoChamado(passos: string[]) {
+    if (categorias.length === 0) carregarCategorias()
+    setPassosFeitos(passos)
+    setNovoChamadoAberto(true)
+  }
+
+  async function enviarChamado(categoriaPk: number, assunto: string, descricao: string): Promise<ChamadoCriado | null> {
     try {
-      const mensagem = await apiAbrirChamado(cpf, categoriaPk, assunto.trim(), descricao.trim())
-      toast(mensagem, 'sucesso')
-      setDialogAberto(false)
+      const criado = await apiAbrirChamado(cpf, categoriaPk, assunto, descricao)
       carregar()
+      return criado
     } catch (excecao) {
       toast(excecao instanceof Error ? excecao.message : 'Não foi possível abrir o chamado.')
-    } finally {
-      setEnviando(false)
+      return null
+    }
+  }
+
+  async function falarNoWhatsapp() {
+    try {
+      const cliente = await buscarDadosCliente(cpf)
+      abrirWhatsappSuporte(cliente.client_complete_name ?? null, cpf)
+    } catch {
+      abrirWhatsappSuporte(null, cpf)
     }
   }
 
   return (
     <PullToRefresh aoAtualizar={carregar}>
     <div className="suporte-tela tela-entrada">
-      <CabecalhoTela icone={MdSupportAgent} cor={CORES.suporte} titulo="Suporte" subtitulo="Seus chamados de suporte." />
+      <CabecalhoTela titulo="Suporte" subtitulo="Fale com a equipe Supersonic." />
 
-      <div className="suporte-abas">
-        <button className={`aba-chip aba-abertos ${aba === 'abertos' ? 'ativa' : ''}`} onClick={() => setAba('abertos')}>
-          Abertos
+      {/* Atalhos no topo (AtalhoSuporte do app Android), no lugar do botão flutuante. */}
+      <div className="suporte-atalhos">
+        <button type="button" className="suporte-atalho" onClick={abrirChecklist} aria-label="Novo chamado">
+          <span className="suporte-atalho-icone novo" aria-hidden="true">
+            <MdAdd size={18} />
+          </span>
+          <strong>Novo chamado</strong>
+          <span>Acompanhe pelo app</span>
         </button>
-        <button
-          className={`aba-chip aba-resolvidos ${aba === 'resolvidos' ? 'ativa' : ''}`}
-          onClick={() => setAba('resolvidos')}
-        >
-          Resolvidos
+        <button type="button" className="suporte-atalho" onClick={falarNoWhatsapp}>
+          <span className="suporte-atalho-icone whatsapp" aria-hidden="true">
+            <IcWhatsapp size={18} />
+          </span>
+          <strong>WhatsApp</strong>
+          <span>Resposta rápida</span>
         </button>
+      </div>
+
+      <div className="suporte-abas-pilula">
+        <AbasPilula<Aba>
+          rotulo="Chamados"
+          opcoes={[
+            { valor: 'abertos', rotulo: 'Abertos', contador: chamados.filter((c) => !chamadoResolvido(c)).length },
+            { valor: 'resolvidos', rotulo: 'Resolvidos' },
+          ]}
+          selecionada={aba}
+          onSelecionar={setAba}
+        />
       </div>
 
       {carregando && (
@@ -223,9 +245,9 @@ export default function Suporte() {
 
       {!carregando && !erro && filtrados.length === 0 && !haMaisParaCarregar && (
         <EstadoVazio
-          icone={MdSupportAgent}
+          icone={IcSupportAgent}
           titulo={aba === 'resolvidos' ? 'Nenhum chamado resolvido ainda' : 'Nenhum chamado em aberto'}
-          subtitulo={aba === 'resolvidos' ? undefined : 'Precisando de ajuda? Toque em "Novo chamado".'}
+          subtitulo={aba === 'resolvidos' ? undefined : 'Tudo certo por aqui. Precisando, toque em "Novo chamado".'}
         />
       )}
 
@@ -243,35 +265,43 @@ export default function Suporte() {
           {filtrados.map((chamado) => {
             const resolvido = chamadoResolvido(chamado)
             return (
-              <li
-                key={chamado.ticket_pk}
-                className="ticket-card"
-                onClick={() => navigate(`/suporte/${chamado.ticket_pk}`, { state: { chamado }, viewTransition: true })}
-              >
-                <div className="ticket-topo">
-                  <span className="ticket-assunto">{chamado.ticket_title ?? `Chamado #${chamado.ticket_pk ?? '-'}`}</span>
-                  <span className={`ticket-status-badge ${resolvido ? 'badge-fechado' : 'badge-aberto'}`}>
-                    {resolvido ? 'Fechado' : 'Aberto'}
+              <li key={chamado.ticket_pk}>
+                <button
+                  type="button"
+                  className="ticket-card"
+                  onClick={() => navigate(`/suporte/${chamado.ticket_pk}`, { state: { chamado }, viewTransition: true })}
+                >
+                  {(() => {
+                    const IconeCategoria = iconeParaCategoria(chamado.category_name ?? '')
+                    return (
+                      <span className="ticket-topo">
+                        <span className="ticket-icone" aria-hidden="true">
+                          <IconeCategoria size={18} />
+                        </span>
+                        <span className="ticket-textos">
+                          <strong className="ticket-assunto">{chamado.ticket_title ?? 'Chamado sem título'}</strong>
+                          <span className="ticket-meta">
+                            {chamado.category_name ?? 'Categoria não informada'} · Protocolo{' '}
+                            {chamado.ticket_protocol ?? chamado.ticket_pk}
+                          </span>
+                        </span>
+                        <span className={`ticket-estado ${resolvido ? 'resolvido' : 'aberto'}`}>
+                          {resolvido ? 'Resolvido' : 'Em aberto'}
+                        </span>
+                      </span>
+                    )
+                  })()}
+                  <span className="ticket-rodape">
+                    <span>
+                      {resolvido
+                        ? `Aberto em ${formatarData(chamado.ticket_date_create) ?? '—'} · fechado em ${formatarData(chamado.ticket_date_close) ?? '—'}`
+                        : `Aberto em ${formatarData(chamado.ticket_date_create) ?? '—'}`}
+                    </span>
+                    <span className="ticket-ver">
+                      Ver conversa <MdKeyboardArrowRight size={18} aria-hidden="true" />
+                    </span>
                   </span>
-                </div>
-                {chamado.ticket_protocol && <p className="ticket-protocolo">Protocolo: {chamado.ticket_protocol}</p>}
-                {(() => {
-                  const nomeCategoria = chamado.category_name ?? ''
-                  const corCategoria = corParaCategoria(nomeCategoria)
-                  const IconeCategoria = iconeParaCategoria(nomeCategoria)
-                  return (
-                    <div
-                      className="ticket-categoria-badge"
-                      style={{ background: comAlpha(corCategoria, 12), color: corCategoria }}
-                    >
-                      <IconeCategoria size={13} />
-                      <span>{chamado.category_name ?? 'Categoria não informada'}</span>
-                    </div>
-                  )
-                })()}
-                <p className="ticket-data">Aberto em {formatarData(chamado.ticket_date_create) ?? 'data não informada'}</p>
-                {resolvido && <p className="ticket-data">Fechado em {formatarData(chamado.ticket_date_close) ?? '-'}</p>}
-                {chamado.ticket_desc && <p className="ticket-descricao">{chamado.ticket_desc}</p>}
+                </button>
               </li>
             )
           })}
@@ -284,137 +314,51 @@ export default function Suporte() {
         </button>
       )}
 
-      <button className="suporte-fab" onClick={() => setChecklistAberto(true)} aria-label="Novo chamado">
-        <MdAdd size={28} />
-      </button>
-
       {checklistAberto && (
-        <div className="suporte-modal-fundo" onClick={() => setChecklistAberto(false)}>
-          <div className="suporte-checklist" onClick={(evento) => evento.stopPropagation()}>
-            <MdSupportAgent size={48} color={CORES.primaria} className="suporte-checklist-icone" />
-            <h2>Antes de abrir o chamado</h2>
-            <p>Esses passos resolvem boa parte dos problemas rapidinho</p>
-
-            <div className="suporte-checklist-itens">
-              <div className="suporte-checklist-item">
-                <span>🔌</span>
-                <div>
-                  <strong>Já reiniciou o roteador?</strong>
-                  <p>Desligue por 10 segundos e ligue de novo</p>
-                </div>
-              </div>
-              <div className="suporte-checklist-item">
-                <span>🔗</span>
-                <div>
-                  <strong>Os cabos estão bem conectados?</strong>
-                  <p>Confira se nenhum fio está solto</p>
-                </div>
-              </div>
-              <div className="suporte-checklist-item">
-                <span>📱</span>
-                <div>
-                  <strong>Testou em outro aparelho?</strong>
-                  <p>Ajuda a saber se é só um aparelho ou a rede toda</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              className="suporte-btn-primario suporte-checklist-continua"
-              onClick={() => {
-                setChecklistAberto(false)
-                abrirDialog()
-              }}
-            >
-              Continua sem funcionar
-            </button>
-            <button className="suporte-checklist-resolvido" onClick={() => setChecklistAberto(false)}>
-              Resolvido, obrigado
-            </button>
-          </div>
-        </div>
+        <ChecklistConexao
+          boletosAtrasados={boletosAtrasados}
+          contratoStatus={contratoStatus}
+          onVerBoletos={() => navigate('/boletos', { viewTransition: true })}
+          onFechar={() => setChecklistAberto(false)}
+          onContinuar={(passos) => {
+            setChecklistAberto(false)
+            abrirNovoChamado(passos)
+          }}
+          onWhatsapp={() => {
+            setChecklistAberto(false)
+            falarNoWhatsapp()
+          }}
+        />
       )}
 
-      {dialogAberto && (
-        <div className="suporte-modal-fundo" onClick={() => setDialogAberto(false)}>
-          <div className="suporte-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>Novo chamado</h2>
-
-            <label>Categoria</label>
-            {(() => {
-              const categoriaSelecionada = categorias.find((c) => c.category_pk === categoriaPk) ?? null
-              const IconeSelecionado = iconeParaCategoria(categoriaSelecionada?.category_name ?? '')
-              return (
-                <div className="suporte-dropdown-wrapper">
-                  <button
-                    type="button"
-                    className="suporte-dropdown-btn"
-                    onClick={() => setCategoriaMenuAberto((v) => !v)}
-                  >
-                    <span className="suporte-dropdown-btn-conteudo">
-                      <IconeSelecionado
-                        className="suporte-dropdown-icone"
-                        style={{ color: corParaCategoria(categoriaSelecionada?.category_name ?? '') }}
-                      />
-                      {categoriaSelecionada?.category_name ?? 'Selecione uma categoria'}
-                    </span>
-                    <MdExpandMore />
-                  </button>
-                  {categoriaMenuAberto && (
-                    <>
-                      <div className="suporte-dropdown-fundo" onClick={() => setCategoriaMenuAberto(false)} />
-                      <div className="suporte-dropdown-lista">
-                        {categorias.map((categoria) => {
-                          const Icone = iconeParaCategoria(categoria.category_name ?? '')
-                          return (
-                            <button
-                              type="button"
-                              key={categoria.category_pk}
-                              className="suporte-dropdown-item"
-                              onClick={() => {
-                                setCategoriaPk(categoria.category_pk)
-                                setCategoriaMenuAberto(false)
-                              }}
-                            >
-                              <Icone
-                                className="suporte-dropdown-icone"
-                                style={{ color: corParaCategoria(categoria.category_name ?? '') }}
-                              />
-                              {categoria.category_name ?? `Categoria ${categoria.category_pk}`}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )
-            })()}
-
-            <label>Assunto</label>
-            <input
-              value={assunto}
-              onChange={(evento) => setAssunto(evento.target.value)}
-              placeholder="Resuma o problema em poucas palavras"
-              maxLength={120}
-            />
-
-            <label>Descrição</label>
-            <textarea
-              value={descricao}
-              onChange={(evento) => setDescricao(evento.target.value)}
-              placeholder="Descreva o problema com detalhes"
-              rows={4}
-            />
-
-            <div className="suporte-modal-acoes">
-              <button onClick={() => setDialogAberto(false)}>Cancelar</button>
-              <button className="suporte-btn-primario" disabled={enviando} onClick={enviarChamado}>
-                {enviando ? 'Enviando…' : 'Enviar chamado'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {novoChamadoAberto && (
+        <NovoChamado
+          categorias={categorias}
+          contratoStatus={contratoStatus}
+          passosFeitos={passosFeitos}
+          iconeDaCategoria={iconeParaCategoria}
+          corDaCategoria={corParaCategoria}
+          onEnviar={enviarChamado}
+          onVerConversa={(criado, assunto, categoria) =>
+            navigate(`/suporte/${criado.ticketPk}`, {
+              state: {
+                chamado: {
+                  ticket_pk: criado.ticketPk ?? undefined,
+                  ticket_title: assunto,
+                  ticket_protocol: criado.protocolo ?? undefined,
+                  category_name: categoria ?? undefined,
+                },
+              },
+              viewTransition: true,
+            })
+          }
+          onVerBoletos={() => navigate('/boletos', { viewTransition: true })}
+          onWhatsapp={() => {
+            setNovoChamadoAberto(false)
+            falarNoWhatsapp()
+          }}
+          onFechar={() => setNovoChamadoAberto(false)}
+        />
       )}
     </div>
     </PullToRefresh>

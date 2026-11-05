@@ -1,11 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { MdGetApp, MdKeyboardArrowRight, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { IcClose, IcWhatsapp } from '../components/IconesApp'
 import { useNavigate } from 'react-router-dom'
-import { MdAccountCircle, MdGetApp, MdLock, MdSupportAgent, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { contasSalvas, esquecerConta, fotoDaConta, type ContaSalva } from '../utils/contaLocal'
+import { mascararDocumento } from '../utils/recibo'
 import { useSessao } from '../auth/useSessao'
-import LoginBackground from '../components/LoginBackground'
 import ModalInstalarIos from '../components/ModalInstalarIos'
+import AjudaLogin from '../components/AjudaLogin'
 import { usePwaInstall } from '../hooks/usePwaInstall'
-import logoSupersonic from '../assets/logo-supersonic.svg'
+import logoApp from '../assets/logo-supersonic.svg'
 import { abrirWhatsappLogin } from '../utils/whatsapp'
 import './Login.css'
 
@@ -14,6 +17,15 @@ export default function Login() {
   const [senha, setSenha] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [ajudaAberta, setAjudaAberta] = useState(false)
+  // Contas já usadas neste aparelho (sem senha), como no app Android.
+  const [contas, setContas] = useState<ContaSalva[]>(() => contasSalvas())
+  const campoSenha = useRef<HTMLInputElement>(null)
+
+  function escolherConta(conta: ContaSalva) {
+    setUsuario(conta.documento)
+    setSenha('')
+    campoSenha.current?.focus()
+  }
   const { entrar, carregando, erro } = useSessao()
   const navigate = useNavigate()
   const { podeInstalar, podeInstalarIos, aoClicarInstalar, modalIosAberto, fecharModalIos } = usePwaInstall()
@@ -34,20 +46,60 @@ export default function Login() {
   async function aoEnviar(evento: FormEvent) {
     evento.preventDefault()
     const sucesso = await entrar(usuario, senha)
-    if (sucesso) navigate('/', { viewTransition: true })
+    if (sucesso) navigate('/', { replace: true, viewTransition: true })
   }
 
   return (
     <div className="login-tela tela-entrada">
-      <LoginBackground />
+      {/* Topo da marca: índigo sólido atrás do texto branco, depois degradê
+          pelo âmbar até o fundo; logotipo horizontal num quadro branco. */}
+      <header className="login-topo">
+        <span className="login-logo-circulo">
+          <img src={logoApp} alt="Supersonic" className="login-logo" />
+        </span>
+        <h1>Entre na sua conta</h1>
+        <p>Conexão, boletos e suporte num só lugar.</p>
+      </header>
 
+      <div className="login-conteudo">
       <div className="login-card">
-        <img src={logoSupersonic} alt="Supersonic" className="login-logo" />
+        {contas.length > 0 && (
+          <div className="login-contas">
+            <span className="login-contas-titulo">Contas neste aparelho</span>
+            {contas.map((conta) => {
+              const foto = fotoDaConta(conta.documento)
+              const ativa = usuario.replace(/\D/g, '') === conta.documento
+              return (
+                <div key={conta.documento} className={`login-conta ${ativa ? 'ativa' : ''}`}>
+                  <button type="button" className="login-conta-escolher" onClick={() => escolherConta(conta)}>
+                    <span className="login-conta-avatar" aria-hidden="true">
+                      {foto ? <img src={foto} alt="" /> : (conta.nome ?? 'C').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="login-conta-textos">
+                      <strong>{conta.nome ?? 'Cliente Supersonic'}</strong>
+                      <span>{mascararDocumento(conta.documento) ?? conta.documento}</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="login-conta-esquecer"
+                    onClick={() => {
+                      esquecerConta(conta.documento)
+                      setContas(contasSalvas())
+                      if (ativa) setUsuario('')
+                    }}
+                    aria-label={`Esquecer a conta de ${conta.nome ?? 'cliente'}`}
+                  >
+                    <IcClose size={18} />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         <form onSubmit={aoEnviar}>
-          <label htmlFor="usuario">
-            <MdAccountCircle className="login-label-icone" /> CPF ou CNPJ
-          </label>
+          <label htmlFor="usuario">CPF ou CNPJ</label>
           <input
             id="usuario"
             type="text"
@@ -58,11 +110,10 @@ export default function Login() {
             required
           />
 
-          <label htmlFor="senha">
-            <MdLock className="login-label-icone" /> Senha
-          </label>
+          <label htmlFor="senha">Senha</label>
           <div className="login-campo-senha">
             <input
+              ref={campoSenha}
               id="senha"
               type={mostrarSenha ? 'text' : 'password'}
               value={senha}
@@ -91,38 +142,36 @@ export default function Login() {
           Não consigo entrar?
         </button>
 
-        {podeInstalar && (
-          <button type="button" className="login-btn-instalar" onClick={aoClicarInstalar}>
-            <MdGetApp size={18} /> Instalar app
-          </button>
-        )}
       </div>
 
-      {ajudaAberta && (
-        <div className="login-modal-fundo" onClick={() => setAjudaAberta(false)}>
-          <div className="login-modal" onClick={(evento) => evento.stopPropagation()}>
-            <h2>
-              <MdSupportAgent className="login-modal-icone" /> Precisando de ajuda?
-            </h2>
-            <p>
-              Usuário e senha são o mesmo número: seu CPF ou CNPJ, sem pontos nem traço. Se o problema persistir,
-              fale com a gente pelo WhatsApp.
-            </p>
-            <div className="login-modal-acoes">
-              <button onClick={() => setAjudaAberta(false)}>Entendi</button>
-              <button
-                className="login-modal-whatsapp"
-                onClick={() => {
-                  setAjudaAberta(false)
-                  abrirWhatsappLogin()
-                }}
-              >
-                Falar com a gente
-              </button>
-            </div>
-          </div>
-        </div>
+      <button type="button" className="login-ajuda" onClick={() => setAjudaAberta(true)}>
+        <span className="login-ajuda-icone" aria-hidden="true">
+          <IcWhatsapp size={20} />
+        </span>
+        <span className="login-ajuda-textos">
+          <strong>Precisa de ajuda?</strong>
+          <span>Fale com a gente no WhatsApp</span>
+        </span>
+        <MdKeyboardArrowRight size={22} aria-hidden="true" />
+      </button>
+
+      {podeInstalar && (
+        <button type="button" className="login-btn-instalar" onClick={aoClicarInstalar}>
+          <MdGetApp size={18} /> Instalar o app
+        </button>
       )}
+
+      {__APP_VERSION__ && <p className="login-versao">Versão {__APP_VERSION__}</p>}
+      </div>
+
+      <AjudaLogin
+        aberto={ajudaAberta}
+        onFechar={() => setAjudaAberta(false)}
+        onWhatsapp={(esqueci) => {
+          const conta = contas.find((c) => c.documento === usuario.replace(/\D/g, ''))
+          abrirWhatsappLogin(usuario, conta?.nome ?? null, esqueci)
+        }}
+      />
 
       <ModalInstalarIos aberto={modalIosAberto} onFechar={fecharModalIos} />
     </div>

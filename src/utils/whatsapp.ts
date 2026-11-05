@@ -1,4 +1,4 @@
-// 55 (Brasil) + 82 (DDD) + 999009302 — WhatsApp de suporte da Supersonic.
+// 55 (Brasil) + 82 (DDD) + 999009302 — mesmo número usado no app Android.
 const NUMERO_WHATSAPP = '5582999009302'
 
 function abrir(mensagem: string) {
@@ -19,7 +19,14 @@ export function abrirWhatsappAjuda(nomeCompleto: string | null, cpf: string | nu
   )
 }
 
-/** Mensagem fixa usada pelo "Não consigo entrar?" da tela de login (sem nome/CPF — o cliente ainda não está logado). */
-export function abrirWhatsappLogin() {
-  abrir('Olá, preciso de ajuda para entrar no aplicativo.')
+/**
+ * "Não consigo entrar?" da tela de login: sem sessão não há nome, mas vai o CPF/CNPJ digitado
+ * (ou "Não informado"), como no app Android — o atendimento identifica o cliente sem perguntar.
+ */
+export function abrirWhatsappLogin(cpfDigitado: string | null, nome: string | null = null, esqueciSenha = false) {
+  const cpf = cpfDigitado?.replace(/\D/g, '') || null
+  const pedido = esqueciSenha
+    ? 'Esqueci minha senha do aplicativo. Podem voltar para a senha padrão?'
+    : 'Preciso de ajuda para entrar no aplicativo.'
+  abrir(`Olá!\nSou *${nome ?? 'Não informado'}*\nCPF: *${cpf ?? 'Não informado'}*\n\n${pedido}`)
 }

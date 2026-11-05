@@ -14,12 +14,48 @@ export function temaAtual(): Tema {
 
 function aplicar(tema: Tema): void {
   document.documentElement.setAttribute('data-theme', tema)
+  atualizarCorDasBarras()
+}
+
+/**
+ * Cor das barras do sistema (notificação e navegação): a do fundo da tela,
+ * como no app Android; no login, o índigo do topo (claro) ou o índigo
+ * fechado (escuro), por trás do degradê.
+ */
+export function atualizarCorDasBarras(): void {
+  const escuro = document.documentElement.getAttribute('data-theme') === 'dark'
+  const login = window.location.pathname === '/login'
+  const cor = login ? (escuro ? '#23255c' : '#3e4095') : escuro ? '#141a1f' : '#f7f8fa'
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+  if (!meta) {
+    meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.appendChild(meta)
+  }
+  meta.content = cor
 }
 
 /** Escolha manual do cliente — fica salva e passa a ignorar o sistema. */
 export function definirTema(tema: Tema): void {
   localStorage.setItem(CHAVE_TEMA, tema)
   aplicar(tema)
+}
+
+/** Escolha da tela Perfil → Aparência: "sistema" segue o celular (padrão). */
+export type ModoTema = 'sistema' | Tema
+
+export function modoTemaAtual(): ModoTema {
+  const salvo = localStorage.getItem(CHAVE_TEMA)
+  return salvo === 'light' || salvo === 'dark' ? salvo : 'sistema'
+}
+
+export function definirModoTema(modo: ModoTema): void {
+  if (modo === 'sistema') {
+    localStorage.removeItem(CHAVE_TEMA)
+    aplicar(temaDoSistema())
+  } else {
+    definirTema(modo)
+  }
 }
 
 /**
