@@ -1,263 +1,487 @@
 .home-tela {
-  /* Sem altura fixa nem "overflow: hidden" aqui — mesmo padrão das demais
-     telas (Boletos, Contratos, etc.), que deixam o body rolar sozinho.
-     Uma altura travada em 100dvh cortava o menu sem dar nenhum jeito de
-     rolar até o resto quando o conteúdo não cabia na altura disponível
-     (bug real: celular deitado/paisagem tem bem menos altura que em pé,
-     e a grade de 6 itens do menu passava a ficar cortada e inacessível,
-     embora a barra de navegação inferior — fixa, fora desta tela —
-     continuasse funcionando normalmente). */
-  background: var(--cor-fundo);
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* Cabeçalho (MainHeader): inicial no círculo laranja-claro com anel laranja,
+   saudação em titleLarge ExtraBold e a pergunta em cinza. */
 .home-cabecalho {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px 20px;
-  margin-bottom: 20px;
-  border-radius: 20px;
-  border: 1px solid transparent;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 0 2px;
 }
 
-.home-header-logo {
-  height: 40px;
-  width: auto;
-  max-width: 120px;
-  object-fit: contain;
-  border-radius: 12px;
-  background: var(--cor-superficie);
-  box-shadow: var(--sombra-card);
-  padding: 6px 10px;
-  flex-shrink: 0;
+.home-avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--cor-primaria);
+  background: var(--cor-primaria-container);
+  color: var(--cor-sobre-primaria-container);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-.home-header-saudacao {
-  flex: 1;
+.home-cabecalho-textos {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
 .home-saudacao {
-  display: block;
-  font-size: 18px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: 800;
-  color: var(--cor-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .home-subtitulo {
-  margin: 2px 0 0;
-  color: var(--cor-texto-terciario);
   font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
 }
 
-.home-avatar-wrapper {
-  position: relative;
+/* Seletor de contrato: trilho de pílulas, como AbasPilula. */
+.home-seletor {
+  display: flex;
+  gap: 0;
+  padding: 3px;
+  border-radius: var(--raio-md);
+  background: var(--cor-superficie-alta);
+  overflow-x: auto;
+}
+
+.home-seletor-item {
+  flex: 1;
+  min-height: 40px;
+  border: none;
+  border-radius: var(--raio-sm);
+  background: transparent;
+  color: var(--cor-texto-secundario);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.home-seletor-item.ativo {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-weight: 800;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* Faixa da conexão (normal): branca, cantos de 24, abre os detalhes. */
+.home-faixa {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-xl);
+  overflow: hidden;
+}
+
+.home-faixa-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--cor-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-faixa-ponto {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 50%;
+  background: var(--cor-texto-desabilitado);
+}
+
+.home-faixa-ponto.online {
+  background: #20b957;
+}
+
+.home-faixa-ponto.verificando {
+  animation: home-pulso 1.2s ease-in-out infinite;
+}
+
+@keyframes home-pulso {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.home-faixa-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-faixa-textos strong {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 800;
+}
+
+.home-faixa-textos span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.home-faixa-seta {
+  color: var(--cor-texto-secundario);
+  transition: rotate 0.2s ease;
+}
+
+.home-faixa-seta.aberta {
+  rotate: 180deg;
+}
+
+.home-faixa-detalhes {
+  padding: 0 16px 12px;
+}
+
+.home-blocos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.home-bloco {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie-alta);
+}
+
+.home-bloco span {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
+}
+
+.home-bloco strong {
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+/* Dois botões em metades iguais, alinhados com Plano e Uso acima (mesma
+   grade), sempre em uma linha: a letra acompanha a largura da tela. */
+.home-faixa-botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.home-faixa-botoes > * {
+  min-width: 0;
+  gap: 6px;
+  padding: 0 8px;
+  white-space: nowrap;
+  font-size: clamp(12px, 3.4vw, 14px);
+}
+
+/* Só o Diagnóstico (conexão sem teste de velocidade): linha inteira. */
+.home-faixa-botoes > :only-child {
+  grid-column: 1 / -1;
+}
+
+/* Faixa da conexão com problema: errorContainer (cancelado: cinza). */
+.home-faixa-problema {
+  padding: 16px;
+  border-radius: var(--raio-xl);
+  background: #ffd9e2;
+  color: #3f0018;
+}
+
+.home-faixa-problema.neutra {
+  background: var(--cor-superficie-alta);
+  color: var(--cor-texto);
+}
+
+:root[data-theme='dark'] .home-faixa-problema:not(.neutra) {
+  background: #8e0e42;
+  color: #ffd9e2;
+}
+
+.home-faixa-problema-topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.home-faixa-problema-topo svg {
+  margin-top: 2px;
   flex-shrink: 0;
 }
 
-.home-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
+.home-faixa-problema-topo strong {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 800;
+}
+
+.home-faixa-problema-topo p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.home-faixa-problema .botao-primario {
+  width: 100%;
+}
+
+
+
+
+
+
+
+
+
+/* "Tudo em dia" (TudoEmDiaCard). */
+.home-em-dia {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
   background: var(--cor-superficie);
-  color: var(--cor-primaria);
-  box-shadow: var(--sombra-card);
+  color: var(--cor-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-em-dia-icone {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  background: color-mix(in srgb, var(--cor-sucesso) 16%, transparent);
+  color: var(--cor-sucesso);
 }
 
-.home-avatar-menu-fundo {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
+.home-em-dia-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.home-avatar-menu {
-  position: absolute;
-  top: 52px;
-  right: 0;
-  z-index: 11;
-  background: var(--cor-superficie);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  min-width: 120px;
+.home-em-dia-textos strong {
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.home-avatar-menu button {
+.home-em-dia-textos span {
+  font-size: 12px;
+  color: var(--cor-texto-secundario);
+}
+
+.home-em-dia-acao {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 12px 16px;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--cor-texto);
-  cursor: pointer;
+  font-weight: 800;
+  color: var(--cor-primaria);
   white-space: nowrap;
 }
 
-.home-avatar-menu button:hover {
-  background: var(--cor-fundo);
-}
-
-.home-avatar-menu-sair {
-  color: var(--cor-erro) !important;
-}
-
-.home-conteudo {
-  max-width: var(--largura-conteudo);
-  margin: 0 auto;
-  padding: 24px 20px 48px;
-}
-
-.home-card-status {
-  background: var(--cor-superficie);
-  border-radius: 20px;
-  padding: 18px;
-  box-shadow: var(--sombra-card);
-  margin-bottom: 20px;
-}
-
-.home-card-status-topo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.home-indicador {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  border-radius: 14px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-card-status-textos {
-  flex: 1;
-  min-width: 0;
-}
-
-.home-plano-nome {
-  font-weight: 400;
-  color: var(--cor-texto-terciario);
-  font-size: 12px;
-}
-
-.home-status-texto {
-  margin: 2px 0 0;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.home-status-resumo {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--cor-texto-terciario);
-}
-
-.home-teste-velocidade {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  /* 36px (não os 44px de alvo mínimo de uma ação principal) — é um link
-     secundário dentro do card de status, mesmo critério já usado em
-     "Ver mais boletos pagos" (Boletos.css): compensa com padding lateral
-     em vez de altura cheia. */
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 18px;
-  /* Sem fundo (background transparente, herdado por padrão) — só a
-     borda e o texto/ícone (via currentColor) na cor do Consumo, mesma
-     linguagem visual do ícone de Consumo no menu da Home. */
-  border: 1.5px solid var(--cor-consumo);
-  color: var(--cor-consumo);
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.home-seletor-contrato {
-  width: 100%;
-  height: 40px;
-  margin-top: 12px;
-  border-radius: 8px;
+/* Acesso rápido: bloco branco com 5 círculos alternando laranja e vermelho. */
+.home-atalhos {
+  margin-top: 4px;
+  padding: 12px;
   border: 1px solid var(--cor-borda);
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--cor-texto);
+  border-radius: var(--raio-xl);
   background: var(--cor-superficie);
 }
 
-.home-whatsapp {
-  width: 100%;
-  height: 52px;
-  border: none;
-  border-radius: 14px;
-  color: var(--cor-branco-fixo);
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--cor-whatsapp), var(--cor-whatsapp-escura));
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.home-atalhos h2 {
+  margin: 2px 0 10px 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
 }
 
-.home-menu {
+.home-atalhos-grade {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
 }
 
-.home-menu-item {
-  background: var(--cor-superficie);
-  border-radius: 16px;
-  padding: 20px 8px;
-  box-shadow: var(--sombra-card);
+.home-atalho {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  color: inherit;
+  gap: 6px;
+  padding: 6px 0;
+  border: none;
+  border-radius: var(--raio-md);
+  background: transparent;
+  color: var(--cor-texto);
+  font: inherit;
+  cursor: pointer;
 }
 
-.home-menu-icone {
+.home-atalho-icone {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.home-menu-label {
+.home-atalho-icone.primaria {
+  background: var(--cor-primaria-container);
+  color: var(--cor-primaria);
+}
+
+.home-atalho-icone.terciaria {
+  background: var(--cor-terciaria-container);
+  color: var(--cor-terciaria);
+}
+
+:root[data-theme='dark'] .home-atalho-icone.primaria {
+  color: var(--cor-primaria-clara);
+}
+
+.home-atalho-titulo {
   font-size: 12px;
-  font-weight: 600;
+  line-height: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* WhatsApp (WhatsappButton): verde só no símbolo, "Chamar" em laranja. */
+.home-whatsapp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie);
   color: var(--cor-texto);
-  text-align: center;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.home-rodape {
-  text-align: center;
-  margin-top: 24px;
+.home-whatsapp-icone {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-whatsapp);
+  color: #ffffff;
 }
 
-.home-rodape a {
+.home-whatsapp-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-whatsapp-textos strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.home-whatsapp-textos span {
   font-size: 12px;
-  color: var(--cor-texto-terciario);
+  color: var(--cor-texto-secundario);
 }
+
+.home-whatsapp-chamar {
+  padding: 6px 10px;
+  border-radius: var(--raio-md);
+  background: var(--cor-primaria);
+  color: var(--cor-branco-fixo);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.home-avatar {
+  overflow: hidden;
+  padding: 0;
+}
+
+.home-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Lembrete da senha padrão (LembreteSenhaPadraoCard): só a pergunta e duas saídas. */
+.home-lembrete {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background: var(--cor-primaria-container);
+  color: var(--cor-sobre-primaria-container);
+}
+
+.home-lembrete strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.home-lembrete > span {
+  font-size: 13px;
+}
+
+.home-lembrete-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.home-lembrete-acoes > * {
+  min-height: 40px;
+  font-size: 14px;
+}
+
+

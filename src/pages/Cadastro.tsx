@@ -1,50 +1,55 @@
 import { useEffect, useState } from 'react'
-import { MdBadge } from 'react-icons/md'
+import { MdEmail, MdPhone, MdVisibility, MdVisibilityOff } from 'react-icons/md'
+import { IcContentCopy, IcLocationOn, IcWhatsapp } from '../components/IconesApp'
 import { useSessao } from '../auth/useSessao'
-import { buscarDadosCliente, buscarEnderecos, formatarContatos, rotuloDocumento, tipoCadastro, type Endereco } from '../api/cadastro'
+import { buscarDadosCliente, buscarEnderecos, rotuloDocumento, type Endereco } from '../api/cadastro'
 import type { ClientDto } from '../api/client'
 import CabecalhoTela from '../components/CabecalhoTela'
 import PullToRefresh from '../components/PullToRefresh'
 import Skeleton from '../components/Skeleton'
-import { CORES } from '../utils/cores'
+import { BlocoBranco, LinhaItem, RotuloGrupo } from '../components/PadraoTelas'
+import { useToast } from '../components/Toast/useToast'
+import { mostrarAvisoCopiado } from '../utils/avisoCopiado'
+import { mascararDocumento } from '../utils/recibo'
+import { nomeParaExibir } from '../utils/formatacao'
+import { fotoDaConta } from '../utils/contaLocal'
+import { abrirWhatsappSuporte } from '../utils/whatsapp'
 import './Cadastro.css'
 
 function formatarData(raw: string | null | undefined): string | null {
   if (!raw?.trim()) return null
-  const soData = raw.split(' ')[0]
-  const partes = soData.split('-')
-  if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`
-  return null
+  const partes = raw.split(' ')[0].split('-')
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : null
 }
 
-interface Linha {
-  label: string
-  value: string | null | undefined
+/** "a, b; c" → ["a", "b", "c"], sem vazios. */
+function separarLista(raw: string | null | undefined): string[] {
+  return (raw ?? '')
+    .split(/[;,\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
 }
 
-function Bloco({ titulo, linhas }: { titulo: string; linhas: Linha[] }) {
-  const preenchidas = linhas.filter((linha) => linha.value?.trim())
-  if (preenchidas.length === 0) return null
-
-  return (
-    <div className="cadastro-card">
-      <span className="cadastro-card-titulo">{titulo}</span>
-      {preenchidas.map((linha, indice) => (
-        <div className="cadastro-linha" key={indice}>
-          <span>{linha.label}</span>
-          <strong style={{ whiteSpace: 'pre-line' }}>{linha.value}</strong>
-        </div>
-      ))}
-    </div>
-  )
+function formatarDocumento(doc: string): string {
+  const d = doc.replace(/\D/g, '')
+  if (d.length === 11) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+  if (d.length === 14) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`
+  return doc
 }
 
+/**
+ * Meus dados — mesmo layout do app Android (register/CadastroScreen.kt):
+ * titular no cartão grafite (documento oculto até tocar), Contato e
+ * Endereços em blocos brancos, e "Algum dado errado?" no fim.
+ */
 export default function Cadastro() {
   const { cpf } = useSessao()
+  const { toast } = useToast()
   const [cliente, setCliente] = useState<ClientDto | null>(null)
   const [enderecos, setEnderecos] = useState<Endereco[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [mostrarDocumento, setMostrarDocumento] = useState(false)
 
   useEffect(() => {
     carregar()
@@ -65,96 +70,155 @@ export default function Cadastro() {
     }
   }
 
+  async function copiar(texto: string) {
+    try {
+      await navigator.clipboard.writeText(texto)
+      mostrarAvisoCopiado('Copiado')
+    } catch {
+      toast('Não foi possível copiar.')
+    }
+  }
+
+  const nome = cliente?.client_complete_name?.trim() ? nomeParaExibir(cliente.client_complete_name) : 'Não informado'
+  const documento = cliente?.client_doc1?.trim() ?? ''
+  const desde = formatarData(cliente?.client_date_cad)
+  const telefones = separarLista(cliente?.client_phones)
+  const emails = separarLista(cliente?.client_emails)
+  const enderecosOrdenados = [...enderecos].sort((a, b) => Number(b.padrao) - Number(a.padrao))
+
   return (
     <PullToRefresh aoAtualizar={carregar}>
-    <div className="cadastro-tela tela-entrada">
-      <CabecalhoTela
-        icone={MdBadge}
-        cor={CORES.dados}
-        titulo="Meus dados"
-        subtitulo="Suas informações cadastrais na Supersonic."
-      />
+      <div className="cadastro-tela tela-entrada">
+        <CabecalhoTela titulo="Meus dados" subtitulo="Suas informações cadastrais na Supersonic." />
 
-      {carregando && (
-        <>
-          <div className="cadastro-card">
-            <Skeleton width="45%" height={13} />
-            <Skeleton width="70%" height={13} />
-            <Skeleton width="60%" height={13} />
+        {carregando && (
+          <div className="bloco-branco cadastro-esqueleto">
+            <Skeleton width="45%" height={14} />
+            <Skeleton width="70%" height={14} />
+            <Skeleton width="60%" height={14} />
           </div>
-          <div className="cadastro-card">
-            <Skeleton width="35%" height={13} />
-            <Skeleton width="55%" height={13} />
+        )}
+
+        {!carregando && erro && (
+          <div className="erro-carregamento">
+            <p>{erro}</p>
+            <button type="button" className="botao-primario" onClick={carregar}>
+              Tentar novamente
+            </button>
           </div>
-        </>
-      )}
+        )}
 
-      {!carregando && erro && (
-        <div className="cadastro-status">
-          <p>{erro}</p>
-          <button onClick={carregar}>Tentar novamente</button>
-        </div>
-      )}
-
-      {!carregando && !erro && cliente && (
-        <>
-          <Bloco
-            titulo="Informações pessoais"
-            linhas={[
-              { label: 'Tipo de cliente', value: tipoCadastro(cliente.client_doc1) },
-              { label: 'Nome completo', value: cliente.client_complete_name },
-              { label: rotuloDocumento(cliente.client_doc1), value: cliente.client_doc1 },
-              { label: rotuloDocumento(cliente.client_doc1) === 'CNPJ' ? 'Inscrição Estadual' : 'RG', value: cliente.client_doc2 },
-              { label: 'Cliente desde', value: formatarData(cliente.client_date_cad) },
-            ]}
-          />
-
-          <Bloco
-            titulo="Contato"
-            linhas={[
-              { label: 'Telefone(s)', value: formatarContatos(cliente.client_phones) },
-              { label: 'E-mail', value: formatarContatos(cliente.client_emails) },
-            ]}
-          />
-
-          {enderecos.length === 0 ? (
-            <p className="cadastro-endereco-indisponivel">Endereço indisponível no momento.</p>
-          ) : (
-            enderecos.map((endereco, indice) => {
-              const titulo = endereco.identificacao?.trim()
-                ? endereco.identificacao
-                : endereco.padrao
-                  ? 'Endereço padrão'
-                  : `Endereço ${indice + 1}`
-              const logradouro = [endereco.logradouro, endereco.numero ? `nº ${endereco.numero}` : null]
-                .filter(Boolean)
-                .join(', ')
-              const cidadeUf = [endereco.cidade, endereco.estado].filter(Boolean).join(' - ')
-
-              return (
-                <div className="cadastro-card" key={endereco.addressPk || indice}>
-                  <span className="cadastro-card-titulo cadastro-endereco-titulo">{titulo}</span>
-                  {[
-                    { label: 'Logradouro', value: logradouro || null },
-                    { label: 'Bairro', value: endereco.bairro },
-                    { label: 'CEP', value: endereco.cep },
-                    { label: 'Cidade / UF', value: cidadeUf || null },
-                    { label: 'Complemento', value: endereco.complemento },
-                  ]
-                    .filter((linha) => linha.value?.trim())
-                    .map((linha, i) => (
-                      <div className="cadastro-linha" key={i}>
-                        <span>{linha.label}</span>
-                        <strong>{linha.value}</strong>
-                      </div>
-                    ))}
+        {!carregando && !erro && cliente && (
+          <>
+            <section className="cartao-destaque cadastro-titular" aria-label="Titular">
+              <div className="cadastro-titular-topo">
+                <span className="cadastro-titular-inicial" aria-hidden="true">
+                  {fotoDaConta(cpf) ? <img src={fotoDaConta(cpf)!} alt="" /> : nome.charAt(0).toUpperCase()}
+                </span>
+                <div className="cadastro-titular-textos">
+                  <strong>{nome}</strong>
+                  {desde && <span>Cliente desde {desde}</span>}
                 </div>
-              )
-            })
-          )}
-        </>
-      )}
-    </div>
+              </div>
+              {documento && (
+                <button
+                  type="button"
+                  className="etiqueta-destaque cadastro-documento"
+                  onClick={() => setMostrarDocumento((v) => !v)}
+                  aria-label={mostrarDocumento ? 'Ocultar documento' : 'Mostrar documento'}
+                >
+                  {rotuloDocumento(documento)}{' '}
+                  {mostrarDocumento ? formatarDocumento(documento) : (mascararDocumento(documento) ?? documento)}
+                  {mostrarDocumento ? <MdVisibilityOff size={16} aria-hidden="true" /> : <MdVisibility size={16} aria-hidden="true" />}
+                </button>
+              )}
+            </section>
+
+            <RotuloGrupo>Contato</RotuloGrupo>
+            <BlocoBranco>
+              {telefones.map((fone) => (
+                <LinhaItem
+                  key={fone}
+                  icone={MdPhone}
+                  tom="primaria"
+                  rotulo="Telefone"
+                  titulo={fone}
+                  fim={
+                    <button type="button" className="linha-item-copiar" onClick={() => copiar(fone)} aria-label="Copiar telefone">
+                      <IcContentCopy size={18} />
+                    </button>
+                  }
+                />
+              ))}
+              {emails.map((email) => (
+                <LinhaItem
+                  key={email}
+                  icone={MdEmail}
+                  tom="primaria"
+                  rotulo="E-mail"
+                  titulo={email}
+                  fim={
+                    <button type="button" className="linha-item-copiar" onClick={() => copiar(email)} aria-label="Copiar e-mail">
+                      <IcContentCopy size={18} />
+                    </button>
+                  }
+                />
+              ))}
+              {telefones.length === 0 && emails.length === 0 && <LinhaItem icone={MdEmail} tom="primaria" titulo="Não informado" />}
+            </BlocoBranco>
+
+            <RotuloGrupo>Endereços</RotuloGrupo>
+            {enderecosOrdenados.length === 0 ? (
+              <p className="cadastro-endereco-indisponivel">Endereço indisponível no momento.</p>
+            ) : (
+              <BlocoBranco>
+                {enderecosOrdenados.map((endereco, indice) => {
+                  const rotulo = endereco.identificacao?.trim()
+                    ? endereco.identificacao
+                    : endereco.padrao
+                      ? 'Endereço padrão'
+                      : `Endereço ${indice + 1}`
+                  const logradouro = [endereco.logradouro, endereco.numero ? `nº ${endereco.numero}` : null].filter(Boolean).join(', ')
+                  const detalhes = [
+                    endereco.complemento,
+                    endereco.bairro,
+                    [endereco.cidade, endereco.estado].filter(Boolean).join(' - '),
+                    endereco.cep ? `CEP ${endereco.cep}` : null,
+                  ]
+                    .filter((s) => s?.trim())
+                    .join(' · ')
+                  return (
+                    <div className="linha-item" key={endereco.addressPk || indice}>
+                      <span className="linha-item-icone linha-item-icone-primaria" aria-hidden="true">
+                        <IcLocationOn size={18} />
+                      </span>
+                      <span className="linha-item-textos">
+                        <span className="linha-item-rotulo">{rotulo}</span>
+                        <span className="linha-item-titulo">{logradouro || 'Sem logradouro'}</span>
+                        {detalhes && <span className="cadastro-endereco-detalhes">{detalhes}</span>}
+                      </span>
+                    </div>
+                  )
+                })}
+              </BlocoBranco>
+            )}
+
+            <button
+              type="button"
+              className="cadastro-dado-errado"
+              onClick={() => abrirWhatsappSuporte(cliente.client_complete_name ?? null, documento || cpf)}
+            >
+              <span className="cadastro-dado-errado-icone" aria-hidden="true">
+                <IcWhatsapp size={20} />
+              </span>
+              <span className="cadastro-dado-errado-textos">
+                <strong>Algum dado errado?</strong>
+                <span>Peça a atualização pelo WhatsApp</span>
+              </span>
+            </button>
+          </>
+        )}
+      </div>
     </PullToRefresh>
   )
 }

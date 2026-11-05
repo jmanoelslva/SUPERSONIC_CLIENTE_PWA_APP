@@ -1,55 +1,127 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Manrope — a mesma fonte do app Android (res/font), nos 5 pesos que ele
+   usa, só o subconjunto latino (cobre o português). Servida pelo próprio
+   app e pré-cacheada pelo service worker. Licença OFL:
+   assets/fonts/Manrope-LICENSE.txt. */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/manrope-regular-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./assets/fonts/manrope-medium-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./assets/fonts/manrope-semibold-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/manrope-bold-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 800 900;
+  font-display: swap;
+  src: url('./assets/fonts/manrope-extrabold-latin.woff2') format('woff2');
+}
 
 :root {
-  font-family: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Manrope', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Algarismos de largura fixa: valores, datas e consumo alinham em coluna. */
+  font-variant-numeric: tabular-nums;
   color-scheme: light dark;
 
-  /* Marca */
-  --cor-primaria: #ffa401;
-  --cor-primaria-escura: #3e4095;
-  --cor-primaria-clara: #ffbb4d;
-  --cor-primaria-gradiente-fim: #3e4095;
+  /* Marca — cores do logotipo Supersonic: índigo #3E4095 para ação (branco
+     por cima = 9:1) e âmbar #FFA401 de destaque, sempre com texto escuro
+     (branco sobre o âmbar não tem contraste). Grafite nos textos. */
+  --cor-primaria: #3e4095;
+  --cor-primaria-escura: #2e3075;
+  --cor-primaria-clara: #9a9ce6;
+  --cor-primaria-gradiente-fim: #23255c;
 
   /* Superfícies */
-  --cor-fundo: #f5f5f5;
+  --cor-fundo: #f7f8fa;
   --cor-superficie: #ffffff;
-  --cor-borda: #e0e0e0;
-  --cor-borda-suave: #eeeeee;
-  --cor-borda-clara: #f0f0f0;
+  --cor-borda: #d5dae0;
+  --cor-borda-suave: #e9edf1;
+  --cor-borda-clara: #eef1f4;
   /* Branco fixo — pra texto/ícone sobre um fundo de cor sólida (botão
      gradiente, badge, cabeçalho). NUNCA redefinido no bloco escuro: o
      badge continua colorido lá, então o texto em cima precisa continuar
      branco, diferente de --cor-superficie (que vira escura). */
   --cor-branco-fixo: #ffffff;
+  /* Cartão de conexão da Início: grafite nos dois temas, texto branco fixo por cima. */
+  /* Grafite liso do app Android (HomeColors.kt, GrafiteLight), sem degradê. */
+  --cor-cartao-conexao: #273945;
+  --cor-cartao-conexao-fim: #273945;
+  /* Âmbar do logotipo: no cartão grafite, só com texto escuro (9:1). */
+  --cor-laranja-vivo: #ffa401;
+  --cor-texto-sobre-laranja: #2a1a00;
 
-  /* Texto */
-  --cor-texto: #333333;
-  --cor-texto-secundario: #666666;
-  --cor-texto-terciario: #999999;
-  --cor-texto-fraco: #9e9e9e;
-  --cor-texto-desabilitado: #757575;
+  /* Papéis do Material 3 do app Android (ui/theme/Color.kt). */
+  --cor-primaria-container: #e6e7f6;
+  --cor-sobre-primaria-container: #23255c;
+  /* Terciária = âmbar escurecido (5:1 sobre o creme), par do índigo. */
+  --cor-terciaria: #8f5a00;
+  --cor-terciaria-container: #fff1d6;
+  --cor-superficie-alta: #e7ebef;
+  --cor-superficie-media: #edf0f3;
 
-  /* Status/feedback */
-  --cor-sucesso: #4caf50;
+  /* Raios (ui/theme/Shape.kt): 4 / 8 / 12 / 16 / 24. */
+  --raio-xs: 4px;
+  --raio-sm: 8px;
+  --raio-md: 12px;
+  --raio-lg: 16px;
+  --raio-xl: 24px;
+
+  /* Texto — grafite da marca; cinzas de apoio escurecidos para passar no
+     contraste mínimo (WCAG AA, 4,5:1) sobre o branco e o fundo. */
+  --cor-texto: #243642;
+  --cor-texto-secundario: #586476;
+  --cor-texto-terciario: #5f6b7c;
+  --cor-texto-fraco: #64707f;
+  --cor-texto-desabilitado: #737f8e;
+
+  /* Status/feedback — escurecidos no claro para texto/ícone branco por
+     cima passar no contraste; no escuro ficam os tons claros (abaixo). */
+  --cor-sucesso: #2e7d32;
   --cor-sucesso-vivo: #20b957;
   --cor-alerta: #ff9800;
   --cor-atencao: #ffc107;
-  --cor-erro: #f44336;
+  --cor-erro: #c62828;
 
-  /* Acentos por tela (mesma linguagem visual do app Android) */
+  /* Acentos por tela (mesma linguagem visual do app Android), com o
+     mesmo critério de contraste do PWA do técnico. */
   --cor-boletos: var(--cor-primaria-escura);
   --cor-contratos: #4a5c7a;
-  --cor-consumo: #18afc0;
-  --cor-suporte: #0f8a45;
+  --cor-consumo: #0e7f8c;
+  --cor-suporte: #0b7a3b;
   --cor-dados: #7a4bc4;
   --cor-ajuda: #2a72b8;
-  --cor-pix: #00a884;
+  --cor-pix: #008f70;
   --cor-whatsapp: #25d366;
   --cor-whatsapp-escura: #1da851;
 
-  /* Sombra dos cards — token à parte porque no escuro uma sombra preta
-     não aparece contra um fundo já escuro (ver bloco dark abaixo). */
-  --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  /* Cartão "chapado" com borda fina (sombra some no sol e pesa no tema
+     escuro), como no PWA do técnico. */
+  --sombra-card: 0 0 0 1px var(--cor-borda);
 
   /* Largura do conteúdo principal (container centralizado de cada tela,
      inclusive a barra de navegação inferior) — um token só, em vez do
@@ -64,6 +136,9 @@
      vindo só do padding de cada "-tela" (20-24px), igual em qualquer
      tamanho de tela — não deste token. */
   --largura-conteudo: 100%;
+
+  /* NavigationBar do Material 3 (80dp) + a linha de gestos do iPhone. */
+  --altura-nav: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Tema escuro — dirigido só pelo atributo data-theme no <html>, nunca
@@ -80,19 +155,36 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --cor-fundo: #121316;
-  --cor-superficie: #1e2025;
-  --cor-borda: #34373e;
-  --cor-borda-suave: #2b2e34;
-  --cor-borda-clara: #292c32;
+  --cor-fundo: #141a1f;
+  --cor-superficie: #1a2127;
+  --cor-borda: #2a343c;
+  --cor-borda-suave: #222b32;
+  --cor-borda-clara: #20282e;
 
-  --cor-texto: #f0f0f0;
-  --cor-texto-secundario: #b8b8bc;
-  --cor-texto-terciario: #9a9aa0;
-  --cor-texto-fraco: #86868c;
-  --cor-texto-desabilitado: #6f6f75;
+  --cor-texto: #e2e3e5;
+  --cor-texto-secundario: #9aa6b4;
+  --cor-texto-terciario: #8a96a4;
+  --cor-texto-fraco: #7f8b99;
+  --cor-texto-desabilitado: #6e7a88;
 
-  --sombra-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --sombra-card: 0 0 0 1px var(--cor-borda);
+
+  --cor-sucesso: #4caf50;
+  --cor-erro: #f44336;
+  --cor-primaria: #6366d1;
+  --cor-primaria-escura: #4f52b8;
+  --cor-boletos: #ffb84d;
+  --cor-consumo: #4fd2e3;
+  --cor-pix: #3ecfb0;
+
+  --cor-cartao-conexao: #25343f;
+  --cor-cartao-conexao-fim: #25343f;
+  --cor-primaria-container: #2a2c5e;
+  --cor-sobre-primaria-container: #d4d5f6;
+  --cor-terciaria: #ffc04d;
+  --cor-terciaria-container: #4a3300;
+  --cor-superficie-alta: #26303a;
+  --cor-superficie-media: #1e262c;
 
   /* Alguns acentos de marca são escuros demais pra servir de TEXTO sobre
      fundo já escuro (ex: botões com fundo translúcido da própria cor) —
@@ -108,16 +200,38 @@
   box-sizing: border-box;
 }
 
+/* Sensação de app: sem a página esticar no topo/fim (o "puxar para
+   atualizar" é do próprio app, PullToRefresh). */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   background: var(--cor-fundo);
   color: var(--cor-texto);
+  /* Texto do app não seleciona ao segurar (como num app nativo); só os
+     campos de entrada de dados continuam selecionáveis. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Campos de entrada de dados: seleção liberada. */
+input,
+textarea,
+[contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* Reserva espaço pro conteúdo não ficar escondido atrás da barra de
    navegação fixa no rodapé, quando ela está presente na página. */
 body:has(.bottom-nav) {
-  padding-bottom: 64px;
+  /* + 24px: o botão "Pagar" sobe acima da barra. */
+  padding-bottom: calc(var(--altura-nav) + 24px);
 }
 
 /* Transição leve de entrada nas telas — aplicada no container raiz de
@@ -137,21 +251,55 @@ body:has(.bottom-nav) {
   animation: fade-in 0.22s ease;
 }
 
-/* Feedback tátil: qualquer botão, link ou item de lista clicável "afunda"
-   levemente ao toque, no lugar do brilho cinza padrão do navegador — mais
-   parecido com um app nativo. */
-button:not(:disabled),
-a,
-.ticket-card {
+/* --- Toque como app nativo ------------------------------------------------ */
+html {
+  /* Sem o realce do navegador ao tocar e sem zoom (pinça ou toque duplo)
+     na tela — o iPhone ignora user-scalable=no do viewport, por isso o
+     touch-action também. */
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.1s ease, opacity 0.1s ease;
+  touch-action: pan-x pan-y;
 }
 
-button:not(:disabled):active,
-a:active,
-.ticket-card:active {
-  transform: scale(0.96);
-  opacity: 0.85;
+/* Botões, abas, rótulos e títulos não selecionam texto ao segurar o dedo
+   (campos, linha digitável, código PIX e demais dados continuam
+   selecionáveis). */
+button,
+[role='tab'],
+nav,
+label,
+h1,
+h2,
+h3 {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Botão, link ou item de lista "afunda" de leve ao tocar. `scale` (não
+   transform) para não brigar com elementos que já usam transform para se
+   posicionar. */
+@media (pointer: coarse) {
+  button,
+  a,
+  [role='tab'],
+  .ticket-card {
+    transition: scale 0.12s ease;
+  }
+
+  button:active:not(:disabled),
+  a:active,
+  [role='tab']:active,
+  .ticket-card:active {
+    scale: 0.97;
+  }
+
+  /* Sem barra de rolagem visível no celular. */
+  html {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Respeita quem desativou animação no sistema — para tudo (fade-in,
@@ -170,31 +318,156 @@ a:active,
 /* Transição entre telas — View Transitions API nativa do navegador (sem
    lib nenhuma), ligada via a prop "viewTransition" do react-router-dom
    em cada <Link>/<NavLink>/navigate() (ver App.tsx e as páginas). Troca
-   o corte seco de rota por um fade + leve deslize horizontal, parecido
-   com a navegação "empurrada" de um app nativo. Sem suporte no navegador
-   (Firefox, Safari antigo), a prop é ignorada e a navegação continua
-   funcionando normal, só sem a transição — progressive enhancement, não
-   quebra nada. */
+   o corte seco de rota pela navegação "empurrada" de app nativo: a tela
+   nova entra inteira pela direita por cima da anterior, que recua um
+   pouco e escurece. Sem suporte no navegador (Firefox, Safari antigo), a
+   prop é ignorada e a navegação continua funcionando normal, só sem a
+   transição. */
 @media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation-fill-mode: both;
+  }
+
   ::view-transition-old(root) {
-    animation: tela-sai 0.22s ease both;
+    animation-name: tela-sai;
   }
 
   ::view-transition-new(root) {
-    animation: tela-entra 0.22s ease both;
+    animation-name: tela-entra;
   }
 }
 
 @keyframes tela-sai {
   to {
-    opacity: 0;
-    transform: translateX(-16px);
+    transform: translateX(-25%);
+    filter: brightness(0.85);
   }
 }
 
 @keyframes tela-entra {
   from {
-    opacity: 0;
-    transform: translateX(16px);
+    transform: translateX(100%);
   }
+}
+
+/* Barra do rodapé e aviso de sem conexão ficam parados durante a troca de
+   tela (senão deslizariam junto com a página). */
+.bottom-nav {
+  view-transition-name: barra-inferior;
+}
+
+.status-banner-offline {
+  view-transition-name: aviso-offline;
+}
+
+::view-transition-group(barra-inferior),
+::view-transition-group(aviso-offline) {
+  animation: none;
+}
+
+/* Texto só para leitores de tela (ex.: "atendida/pendente" nas regras da senha). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Botões do app Android (Button / OutlinedButton do M3) --------------- */
+.botao-primario,
+.botao-contorno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: var(--raio-md);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao-primario {
+  border: none;
+  background: var(--cor-primaria);
+  color: var(--cor-branco-fixo);
+}
+
+.botao-contorno {
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid var(--cor-borda);
+  background: transparent;
+  color: var(--cor-primaria);
+}
+
+:root[data-theme='dark'] .botao-contorno {
+  color: var(--cor-primaria-clara);
+}
+
+/* --- Janelas como no app Android ------------------------------------------
+   O app não tem folhas que sobem de baixo: toda janela abre centralizada
+   (Dialog do Compose), com cantos de 28 e fundo escurecido a 32%. */
+.checklist-fundo,
+.chamado-fundo,
+.recibo-fundo,
+.modal-instalar-ios-fundo,
+.suporte-modal-fundo {
+  align-items: center !important;
+  padding: 24px 16px !important;
+  background: rgba(0, 0, 0, 0.32) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.checklist-modal,
+.chamado-modal,
+.recibo-modal,
+.modal-instalar-ios,
+.suporte-modal,
+.suporte-checklist {
+  border-radius: 28px !important;
+  max-width: 560px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: janela-entra 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.modal-instalar-ios::before,
+.suporte-modal::before,
+.suporte-checklist::before {
+  display: none !important;
+}
+
+@keyframes janela-entra {
+  from {
+    opacity: 0;
+    scale: 0.92;
+  }
+}
+
+/* Imagens não se arrastam nem abrem o menu "salvar imagem" ao segurar,
+   como num app nativo (a foto do chamado continua abrindo pelo toque). */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Foco visível só para quem navega pelo teclado; o toque não deixa contorno. */
+:focus:not(:focus-visible) {
+  outline: none;
 }
